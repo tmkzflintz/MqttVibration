@@ -38,7 +38,7 @@ void initGSM(){
   {    
     delay(3000);
     Serial.println("Initializing modem...");
-    Serial.println(modem.initTest()? "OK" : "FAIL");
+    Serial.println(modem.restart()? "OK" : "FAIL");
     delay(1000);
     
     simState = modem.getSimStatus();

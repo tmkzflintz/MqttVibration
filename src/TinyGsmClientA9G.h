@@ -133,18 +133,6 @@ public:
      return init(pin);
    }
 
-  bool initTest()
-  {
-    if (!testAT()) {
-      return false;
-    }
-    sendAT(GF("+RST=1"));
-    if (waitResponse(3000) != 1)
-      return false;
-
-    return true;
-  }
-
   bool init(const char* pin = NULL) {
     DBG(GF("### TinyGSM Version:"), TINYGSM_VERSION);
     if (!testAT()) {
@@ -212,7 +200,7 @@ TINY_GSM_MODEM_GET_INFO_ATI()
     sendAT(GF("+RST=1"));
     if (waitResponse(60000L) != 1)
       return false;
-    return init();
+    return true;
   }
 
   bool poweroff() {
