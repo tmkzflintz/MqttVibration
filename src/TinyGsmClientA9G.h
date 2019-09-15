@@ -197,8 +197,8 @@ TINY_GSM_MODEM_GET_INFO_ATI()
     if (!testAT()) {
       return false;
     }
-    sendAT(GF("+RST=1"));
-    if (waitResponse(60000L) != 1)
+    sendAT(GF("+RST=2"));
+    if (waitResponse(3000) != 1)
       return false;
     return true;
   }
@@ -281,12 +281,12 @@ TINY_GSM_MODEM_WAIT_FOR_NETWORK()
   bool gpsConnect(){
     gpsDisconnect();
       sendAT(GF("+GPS=1"));
-    if (waitResponse(60000L) != 1) {
+    if (waitResponse(3000) != 1) {
       return false;
     }
  
     sendAT(GF("+GPSRD=1"));
-    if (waitResponse(60000L) != 1) {
+    if (waitResponse(3000) != 1) {
       return false;
     }
     return true;
@@ -296,7 +296,7 @@ TINY_GSM_MODEM_WAIT_FOR_NETWORK()
   bool gpsDisconnect(){
 
       sendAT(GF("+GPS=0"));
-    if (waitResponse(60000L) != 1) {
+    if (waitResponse(3000) != 1) {
       return false;
     }
     return true;
@@ -306,7 +306,7 @@ TINY_GSM_MODEM_WAIT_FOR_NETWORK()
   bool mqttConnect(const char* host, const char* port, const char* clientID){
     mqttDisconnect();
     sendAT(GF("+MQTTCONN=\""), host, GF("\","), port,GF(",\""), clientID, GF("\",120,0"));
-    if (waitResponse(60000L) != 1) {
+    if (waitResponse(3000) != 1) {
       return false;
     }
     return true;
@@ -314,11 +314,15 @@ TINY_GSM_MODEM_WAIT_FOR_NETWORK()
 
   void mqttPublish(const char* topic, const char* payload){
     sendAT(GF("+MQTTPUB=\""), topic, GF("\",\""), payload,GF("\",0,0,0"));
+    // if (waitResponse(1000) != 1) {
+    //   return false;
+    // }
+    // return true;
   }
 
   bool mqttDisconnect(){
     sendAT(GF("+MQTTDISCONN"));
-    if (waitResponse(60000L) != 1) {
+    if (waitResponse(3000) != 1) {
       return false;
     }
     return true;
@@ -327,7 +331,7 @@ TINY_GSM_MODEM_WAIT_FOR_NETWORK()
   bool gprsConnect(const char* apn, const char* user = NULL, const char* pwd = NULL) {
     gprsDisconnect();
     sendAT(GF("+CGATT=1"));
-    if (waitResponse(60000L) != 1)
+    if (waitResponse(3000) != 1)
       return false;
 
     // TODO: wait AT+CGATT?
@@ -336,7 +340,7 @@ TINY_GSM_MODEM_WAIT_FOR_NETWORK()
     waitResponse();
 
     sendAT(GF("+CGACT=1,1"));
-    waitResponse(60000L);
+    waitResponse(3000);
 
     return true;
   }

@@ -27,22 +27,21 @@ String lon = "Null";
 String macAddress = "";
 uint8_t vibrate = 0;
 String satPayload = "";
+int sumError = 0;
 
 void initGSM(){
   bool gprsState = false;
   bool gpsState = false;
   bool mqttState = false;
-  bool simState = false;
 
-  while (!(simState && gprsState && gpsState && mqttState))
+  while (!(gprsState && gpsState && mqttState))
   {    
     delay(3000);
     Serial.println("Initializing modem...");
     Serial.println(modem.restart()? "OK" : "FAIL");
     delay(1000);
     
-    simState = modem.getSimStatus();
-    Serial.println(simState? "READY": "Fail");
+    Serial.println(modem.getSimStatus()? "READY": "Fail");
     delay(1000);    
 
     Serial.println("Connecting to " + apn);
@@ -59,6 +58,9 @@ void initGSM(){
     gpsState = modem.gpsConnect();
     Serial.println(gpsState? "OK": "Fail");
     delay(1000);
+
+    Serial.println("Connecting to modem");
+    
   }
 }
 
@@ -77,7 +79,6 @@ void loop() {
     while (AT.available() > 0)
     {
       char c = AT.read();
-      // Serial.print(c);
       if (gps.encode(c))
       {
           if(gps.location.isValid())
@@ -97,8 +98,14 @@ void loop() {
                         lat + "," + \
                         lon + "," + \
                         vibrate;
-      modem.mqttPublish(topic.c_str(),payload.c_str());      
+      modem.mqttPublish(topic.c_str(),payload.c_str());
       Serial.println("Topic = " + topic + ":" + "Payload = " + payload);
+
+      // if(sumError == 5){
+      //   Serial.println("MQTT Lost Conntection ");
+      //   initGSM();
+      // }
+        
       publishElapsed = 0;
       
     }
@@ -112,6 +119,7 @@ void loop() {
     {    
       delay(500);
       if(!modem.isGprsConnected()){
+      Serial.println("GPRS Lost Conntection ");
       initGSM();
       }
       gprsElapsed = 0;
