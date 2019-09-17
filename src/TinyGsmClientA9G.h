@@ -197,7 +197,7 @@ TINY_GSM_MODEM_GET_INFO_ATI()
     if (!testAT()) {
       return false;
     }
-    sendAT(GF("+RST=2"));
+    sendAT(GF("+RST=1"));
     if (waitResponse(3000) != 1)
       return false;
     return true;
@@ -285,7 +285,7 @@ TINY_GSM_MODEM_WAIT_FOR_NETWORK()
       return false;
     }
  
-    sendAT(GF("+GPSRD=1"));
+    sendAT(GF("+GPSRD=5"));
     if (waitResponse(3000) != 1) {
       return false;
     }
@@ -312,12 +312,12 @@ TINY_GSM_MODEM_WAIT_FOR_NETWORK()
     return true;
   }
 
-  void mqttPublish(const char* topic, const char* payload){
+  bool mqttPublish(const char* topic, const char* payload){
     sendAT(GF("+MQTTPUB=\""), topic, GF("\",\""), payload,GF("\",0,0,0"));
-    // if (waitResponse(1000) != 1) {
-    //   return false;
-    // }
-    // return true;
+    if (waitResponse(1000) != 1) {
+      return false;
+    }
+    return true;
   }
 
   bool mqttDisconnect(){
@@ -348,12 +348,12 @@ TINY_GSM_MODEM_WAIT_FOR_NETWORK()
   bool gprsDisconnect() {
     // Shut the TCP/IP connection
     sendAT(GF("+CIPSHUT"));
-    if (waitResponse(60000L) != 1)
+    if (waitResponse(3000) != 1)
       return false;
 
     for (int i = 0; i<3; i++) {
       sendAT(GF("+CGATT=0"));
-      if (waitResponse(5000L) == 1)
+      if (waitResponse(3000) == 1)
         return true;
     }
 

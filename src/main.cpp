@@ -1,22 +1,25 @@
+#include <Arduino.h>
+
+// Serial2.begin(9600,SERIAL_8N1,16,17);
+
 #define TINY_GSM_MODEM_A6
 
 #include <Arduino.h>
-#include <SoftwareSerial.h>
 #include <elapsedMillis.h>
-#include <ESP8266WiFi.h>
 #include <TinyGPS++.h>
 #include "TinyGsmClientA9G.h"
+#include <BluetoothSerial.h>
+#include <esp_bt_device.h>
 
-#define VIBRATION_PIN D1
-#define AT_RX D2
-#define AT_TX D3
+#define VIBRATION_PIN 4
 
-SoftwareSerial AT(AT_RX, AT_TX);
 elapsedMillis publishElapsed;
 elapsedMillis gprsElapsed;
 elapsedMillis vibrationElapsed;
 TinyGPSPlus gps;
-TinyGsmA6 modem(AT);
+TinyGsmA6 modem(Serial2);
+BluetoothSerial bt;
+
 String apn = "www.dtac.co.th";
 String topic = "Payload";
 String hostIP = "203.172.40.152";
@@ -28,6 +31,7 @@ String macAddress = "";
 uint8_t vibrate = 0;
 String satPayload = "";
 int sumError = 0;
+char deviceAddr[100];
 
 void initGSM(){
   bool gprsState = false;
@@ -64,21 +68,30 @@ void initGSM(){
   }
 }
 
+void getDeviceAddress(char* deviceAddr){
+  const uint8_t* point = esp_bt_dev_get_address();
+  snprintf(deviceAddr, 100 ,"%02X:%02X:%02X:%02X:%02X:%02X", point[0],point[1],point[2],point[3],point[4],point[5]);
+}
+
 void setup() {
   Serial.begin(9600);
-  AT.begin(115200);
+  Serial2.begin(115200, SERIAL_8N1, 16, 17);
   delay(1000);
 
-  macAddress = WiFi.macAddress();
   pinMode(VIBRATION_PIN, INPUT);
+
+  bt.begin("ESP32");
+  getDeviceAddress(deviceAddr);
 
   initGSM();
 }
 
 void loop() {
-    while (AT.available() > 0)
+
+
+    while (Serial2.available() > 0)
     {
-      char c = AT.read();
+      char c = Serial2.read();
       if (gps.encode(c))
       {
           if(gps.location.isValid())
@@ -94,18 +107,26 @@ void loop() {
     }
     if(publishElapsed > 2000)
     {    
-      String payload =  macAddress + "," + \
+      String payload =  String(deviceAddr) + "," + \
                         lat + "," + \
                         lon + "," + \
                         vibrate;
-      modem.mqttPublish(topic.c_str(),payload.c_str());
+      if(modem.mqttPublish(topic.c_str(),payload.c_str()))
+      {
+        sumError = 0;
+      }
+      else
+      {
+        sumError++;
+      }
+      
       Serial.println("Topic = " + topic + ":" + "Payload = " + payload);
 
-      // if(sumError == 5){
-      //   Serial.println("MQTT Lost Conntection ");
-      //   initGSM();
-      // }
-        
+      if(sumError == 3){
+        Serial.println("MQTT Lost Conntection ");
+        lat = lon = "lost";
+        initGSM();
+      }        
       publishElapsed = 0;
       
     }
@@ -120,6 +141,7 @@ void loop() {
       delay(500);
       if(!modem.isGprsConnected()){
       Serial.println("GPRS Lost Conntection ");
+      lat = lon = "lost";
       initGSM();
       }
       gprsElapsed = 0;
