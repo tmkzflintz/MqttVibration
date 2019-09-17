@@ -1,10 +1,4 @@
 #include <Arduino.h>
-
-// Serial2.begin(9600,SERIAL_8N1,16,17);
-
-#define TINY_GSM_MODEM_A6
-
-#include <Arduino.h>
 #include <elapsedMillis.h>
 #include <TinyGPS++.h>
 #include "TinyGsmClientA9G.h"
@@ -14,7 +8,6 @@
 #define VIBRATION_PIN 4
 
 elapsedMillis publishElapsed;
-elapsedMillis gprsElapsed;
 elapsedMillis vibrationElapsed;
 TinyGPSPlus gps;
 TinyGsmA6 modem(Serial2);
@@ -25,11 +18,9 @@ String topic = "Payload";
 String hostIP = "203.172.40.152";
 String port = "1883";
 String cilentID = "55555";
-String lat = "Null";
-String lon = "Null";
-String macAddress = "";
+String lat = "lost";
+String lon = "lost";
 uint8_t vibrate = 0;
-String satPayload = "";
 int sumError = 0;
 char deviceAddr[100];
 
@@ -62,9 +53,6 @@ void initGSM(){
     gpsState = modem.gpsConnect();
     Serial.println(gpsState? "OK": "Fail");
     delay(1000);
-
-    Serial.println("Connecting to modem");
-    
   }
 }
 
@@ -88,7 +76,6 @@ void setup() {
 
 void loop() {
 
-
     while (Serial2.available() > 0)
     {
       char c = Serial2.read();
@@ -105,6 +92,7 @@ void loop() {
           }          
       }
     }
+
     if(publishElapsed > 2000)
     {    
       String payload =  String(deviceAddr) + "," + \
@@ -123,29 +111,16 @@ void loop() {
       Serial.println("Topic = " + topic + ":" + "Payload = " + payload);
 
       if(sumError == 3){
-        Serial.println("MQTT Lost Conntection ");
+        Serial.println("MQTT Lost Connection ");
         lat = lon = "lost";
         initGSM();
       }        
-      publishElapsed = 0;
-      
+      publishElapsed = 0;      
     }
+
     if(vibrationElapsed > 200)
     {
       vibrate = digitalRead(VIBRATION_PIN);
       vibrationElapsed = 0;
-    }
-
-    if(gprsElapsed > 30000L)
-    {    
-      delay(500);
-      if(!modem.isGprsConnected()){
-      Serial.println("GPRS Lost Conntection ");
-      lat = lon = "lost";
-      initGSM();
-      }
-      gprsElapsed = 0;
-    }
-
-    
+    }    
 }
