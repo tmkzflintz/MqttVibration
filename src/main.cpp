@@ -99,21 +99,23 @@ void loop() {
                         lat + "," + \
                         lon + "," + \
                         vibrate;
-      if(modem.mqttPublish(topic.c_str(),payload.c_str()))
+      if(modem.mqttP ublish(topic.c_str(),payload.c_str()))
       {
         sumError = 0;
+        Serial.println("Topic = " + topic + ":" + "Payload = " + payload);
+
       }
       else
       {
         sumError++;
+        Serial.println("Publish lost");  
       }
       
-      Serial.println("Topic = " + topic + ":" + "Payload = " + payload);
-
       if(sumError == 3){
         Serial.println("MQTT Lost Connection ");
         lat = lon = "lost";
         initGSM();
+        sumError = 0;
       }        
       publishElapsed = 0;      
     }

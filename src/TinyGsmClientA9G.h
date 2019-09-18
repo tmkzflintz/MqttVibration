@@ -234,7 +234,7 @@ TINY_GSM_MODEM_GET_IMEI_GSN()
   SimStatus getSimStatus(unsigned long timeout_ms = 10000L) {
     for (unsigned long start = millis(); millis() - start < timeout_ms; ) {
 
-      int status = waitResponse(600000L,GF("READY"), GF("SIM PIN"), GF("SIM PUK"));
+      int status = waitResponse(60000L,GF("READY"), GF("SIM PIN"), GF("SIM PUK"));
       waitResponse();
       switch (status) {
         case 2:
