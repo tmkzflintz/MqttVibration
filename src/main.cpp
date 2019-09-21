@@ -13,7 +13,7 @@ TinyGPSPlus gps;
 TinyGsmA6 modem(Serial2);
 BluetoothSerial bt;
 
-String apn = "www.dtac.co.th";
+String apn = "internet";
 String topic = "Payload";
 String hostIP = "203.172.40.152";
 String port = "1883";
@@ -93,13 +93,13 @@ void loop() {
       }
     }
 
-    if(publishElapsed > 2000)
+    if(publishElapsed > 5000)
     {    
       String payload =  String(deviceAddr) + "," + \
                         lat + "," + \
                         lon + "," + \
                         vibrate;
-      if(modem.mqttP ublish(topic.c_str(),payload.c_str()))
+      if(modem.mqttPublish(topic.c_str(),payload.c_str()))
       {
         sumError = 0;
         Serial.println("Topic = " + topic + ":" + "Payload = " + payload);

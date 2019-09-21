@@ -306,7 +306,7 @@ TINY_GSM_MODEM_WAIT_FOR_NETWORK()
   bool mqttConnect(const char* host, const char* port, const char* clientID){
     mqttDisconnect();
     sendAT(GF("+MQTTCONN=\""), host, GF("\","), port,GF(",\""), clientID, GF("\",120,0"));
-    if (waitResponse(3000) != 1) {
+    if (waitResponse(5000) != 1) {
       return false;
     }
     return true;
@@ -314,7 +314,7 @@ TINY_GSM_MODEM_WAIT_FOR_NETWORK()
 
   bool mqttPublish(const char* topic, const char* payload){
     sendAT(GF("+MQTTPUB=\""), topic, GF("\",\""), payload,GF("\",0,0,0"));
-    if (waitResponse(1000) != 1) {
+    if (waitResponse(5000) != 1) {
       return false;
     }
     return true;
