@@ -476,6 +476,16 @@ TINY_GSM_MODEM_WAIT_FOR_NETWORK()
    * Messaging functions
    */
 
+  String readTime(){
+    sendAT(GF("+CCLK?"));
+    if (waitResponse(GF(GSM_NL "+CCLK:")) != 1) {
+      Serial.println("Read Time Fail");
+      return "";
+    }
+    stream.readStringUntil('"');
+    return stream.readStringUntil('"');
+  }
+
   String sendUSSD(const String& code) {
     sendAT(GF("+CMGF=1"));
     waitResponse();
